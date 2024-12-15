@@ -26,3 +26,5 @@ export const SignUpFormSchema = z.object({
     })
     .trim(),
 });
+
+export const SignInFormSchema = SignUpFormSchema.omit({ name: true });

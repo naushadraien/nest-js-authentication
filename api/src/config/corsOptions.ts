@@ -5,10 +5,12 @@ export const corsOptions = {
     origin: string,
     callback: (err: Error | null, allow?: boolean) => void,
   ) => {
+    //when using server to server request like server action in the next js, the origin will be undefined and then allow to access the resource but when pass the origin in the request header the origin can't be undefined and if this is not in the allowed origins array the request is blocked by cors
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      // this condition checks if the origin is in the allowedOrigins array by using the indexOf method and the !== operator to compare the result to -1 or if the origin is falsy (null, undefined, or an empty string) and if either condition is true, the callback function is called with null and true as arguments to allow the request to proceed with the specified origin or with an error and false to block the request
+      // If the origin is in the allowedOrigins array or the origin is falsy (null, undefined, or an empty string), allow the request
       callback(null, true);
     } else {
+      // If the origin is not in the allowedOrigins array and the origin is not falsy, block the request
       callback(new Error('Not allowed by CORS'));
     }
   },
