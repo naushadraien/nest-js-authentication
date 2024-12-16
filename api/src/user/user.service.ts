@@ -24,4 +24,15 @@ export class UserService {
       },
     });
   }
+  async findUserById(userId: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (user) {
+      delete user.password;
+    }
+    return user;
+  }
 }

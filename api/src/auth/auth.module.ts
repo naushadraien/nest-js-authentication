@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -19,6 +20,12 @@ import { LocalStrategy } from './strategies/local.strategy';
     ConfigModule.forFeature(jwtConfig),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, PrismaService, LocalStrategy],
+  providers: [
+    AuthService,
+    UserService,
+    PrismaService,
+    LocalStrategy,
+    JwtStrategy,
+  ],
 })
 export class AuthModule {}
