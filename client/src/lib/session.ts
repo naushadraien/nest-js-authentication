@@ -56,3 +56,31 @@ export async function deleteSession() {
   const cookieStore = await cookies();
   cookieStore.delete("session");
 }
+
+export async function updateSession({
+  accessToken,
+  refreshToken,
+}: {
+  accessToken: string;
+  refreshToken: string;
+}) {
+  const cookieStore = await cookies();
+  const cookie = cookieStore.get("session")?.value;
+  if (!cookie) return null;
+
+  const { payload } = await jwtVerify<Session>(cookie, encodedKey, {
+    algorithms: ["HS256"],
+  });
+
+  if (!payload) throw new Error("Session not found");
+
+  const newPayload: Session = {
+    user: {
+      ...payload.user,
+    },
+    accessToken,
+    refreshToken,
+  };
+
+  await createSession(newPayload);
+}
