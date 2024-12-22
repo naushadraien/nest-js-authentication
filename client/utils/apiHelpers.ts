@@ -1,6 +1,4 @@
-import refreshToken from "@/actions/auth";
 import { envs } from "@/config/envs";
-import { getSession } from "@/lib/session";
 import axios from "axios";
 
 // Extend AxiosResponse to include the 'ok' property
@@ -24,10 +22,8 @@ axiosInstance.interceptors.request.use(
       );
       console.log("🚀 ~ tokens:", tokens);
 
-      if (tokens?.data?.accessToken || "") {
-        config.headers.Authorization = `Bearer ${
-          tokens?.data?.accessToken || ""
-        }`;
+      if (tokens?.data.accessToken) {
+        config.headers.Authorization = `Bearer ${tokens.data.accessToken}`;
       }
       return config;
     } catch (error) {
@@ -58,18 +54,33 @@ axiosInstance.interceptors.response.use(
             `http://localhost:3000/api/auth/getSession`
           );
           const data = await axios.post(`${envs.BACKEND_URL}/auth/refresh`, {
-            refreshToken: tokens?.data?.refreshToken,
+            refreshToken: tokens.data.refreshToken,
+          });
+
+          await axios.post(`http://localhost:3000/api/auth/updateSession`, {
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
           });
           console.log("🚀 ~ data:", data.data.accessToken);
+
+          // Update the default Authorization header
           axiosInstance.defaults.headers.common[
             "Authorization"
-          ] = `Bearer ${data?.data?.accessToken}`;
+          ] = `Bearer ${data.data.accessToken}`;
+
+          // Update the Authorization header of the original request
           originalRequest.headers[
             "Authorization"
-          ] = `Bearer ${data?.data?.accessToken}`;
+          ] = `Bearer ${data.data.accessToken}`;
+
+          // Retry the original request with the new token
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           alert("Session expired. Please log in again.");
+          // // Redirect to login page
+          // if (typeof window !== "undefined") {
+          //   window.location.href = "/auth/signin";
+          // }
           return Promise.reject(refreshError);
         }
       }

@@ -5,6 +5,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { accessToken, refreshToken } = body;
+    console.log("🚀 ~ POST ~ refreshToken:", refreshToken);
+    console.log("🚀 ~ POST ~ accessToken:", accessToken);
 
     if (!accessToken || !refreshToken) {
       return NextResponse.json(
