@@ -10,6 +10,9 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
+import googleOauthConfig from 'src/config/google-oauth.config';
+import { GoogleStrategy } from './strategies/google.strategy';
+import frontendConfig from 'src/config/frontend.config';
 
 @Module({
   imports: [
@@ -21,6 +24,8 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
     // This allows other parts of the application to access the JWT configuration values using the ConfigService
     ConfigModule.forFeature(jwtConfig),
     ConfigModule.forFeature(refreshConfig),
+    ConfigModule.forFeature(googleOauthConfig),
+    ConfigModule.forFeature(frontendConfig),
   ],
   controllers: [AuthController],
   providers: [
@@ -30,6 +35,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
     LocalStrategy,
     JwtStrategy,
     RefreshTokenStrategy,
+    GoogleStrategy,
   ],
 })
 export class AuthModule {}

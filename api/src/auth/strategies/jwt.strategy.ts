@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // The @Inject decorator is used to inject the configuration values defined in jwt.config.ts
     // The jwtConfig.KEY is used to specify the namespace of the configuration
     @Inject(jwtConfig.KEY)
-    private jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     private readonly authService: AuthService,
   ) {
     super({
