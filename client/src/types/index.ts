@@ -8,3 +8,8 @@ export type FormPreviousState =
       message?: string;
     }
   | undefined;
+
+export enum Role {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}

@@ -67,6 +67,7 @@ export async function signIn(
       user: {
         id: data.id,
         name: data.name,
+        role: data.role,
       },
       accessToken: data.accessToken,
       refreshToken: data.refreshToken,

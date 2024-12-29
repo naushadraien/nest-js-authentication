@@ -11,6 +11,7 @@ import { AuthJWTPayload } from './types/auth.jwtPayload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import refreshConfig from 'src/config/refresh.config';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -33,15 +34,16 @@ export class AuthService {
     if (!isPasswordMatched)
       throw new UnauthorizedException('Invalid Credentials!');
 
-    return { id: user.id, name: user.name };
+    return { id: user.id, name: user.name, role: user.role };
   }
-  async login(userId: number, name?: string) {
+  async login(userId: number, name?: string, role?: Role) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10); //this is done for invalidating or revoking the refresh token when the user logs out
     await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
     return {
       id: userId,
       name,
+      role,
       accessToken,
       refreshToken,
     };
@@ -62,7 +64,7 @@ export class AuthService {
   async validateJwtUser(userId: number) {
     const user = await this.userService.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found!');
-    return { id: user.id };
+    return { id: user.id, role: user.role };
   }
   async validateRefreshToken(userId: number, refreshToken: string) {
     const user = await this.userService.findUserById(userId);

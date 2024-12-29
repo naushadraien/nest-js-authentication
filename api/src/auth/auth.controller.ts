@@ -18,6 +18,9 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 import { Public } from './decorators/public.decorator';
+import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from './guards/roles/roles.guard';
+import { Role } from '@prisma/client';
 
 //Removed the @UseGuards(JwtAuthGuard) decorator as all the api routes are protected by the JwtAuthGuard globally as used in auth module
 
@@ -48,15 +51,21 @@ export class AuthController {
       user: {
         id: number;
         name: string;
+        role: Role;
       };
     },
   ) {
-    return this.authService.login(req.user.id, req.user.name);
+    return this.authService.login(req.user.id, req.user.name, req.user.role);
   }
 
-  //Removed the @UseGuards(JwtAuthGuard) decorator as all the api routes are protected by the JwtAuthGuard globally
-  // @UseGuards(JwtAuthGuard) // only signed in user can call this route
-  @Get('me')
+  // The numbers indicate the sequence of execution for the decorators
+  @Roles('USER') // 4. Sets the metadata for the roles, which is used by the RolesGuard to determine if the user has the required role
+  @UseGuards(RolesGuard) // 3. Checks if the authenticated user has the required role
+  // @UseGuards(JwtAuthGuard) // 2. Checks if the user is authenticated by verifying the JWT token
+
+  // Removed the @UseGuards(JwtAuthGuard) decorator as all the API routes are protected by the JwtAuthGuard globally
+  // only signed-in user can call this route
+  @Get('me') // 1. Sets up the route handler for the GET /me endpoint
   getMyProfile(
     @Request()
     req: {
@@ -86,12 +95,17 @@ export class AuthController {
   async googleCallback(@Request() req, @Res() res: Response) {
     console.log('🚀 ~ AuthController ~ googleCallback ~ req:', req.user);
 
-    const response = await this.authService.login(req.user.id, req.user.name);
+    const response = await this.authService.login(
+      req.user.id,
+      req.user.name,
+      req.user.role,
+    );
     const params = new URLSearchParams();
     params.append('accessToken', response.accessToken);
     params.append('refreshToken', response.refreshToken);
     params.append('name', response.name);
     params.append('userId', response.id.toString());
+    params.append('role', response.role);
 
     console.log('url of frontend', this.frontendConfiguration.frontendURL);
 
