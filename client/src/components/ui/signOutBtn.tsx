@@ -1,15 +1,21 @@
 "use client";
-import React from "react";
-import { Button } from "./button";
+import { envs } from "@/config/envs";
+import authFetch from "@/lib/authFetch";
 import { deleteSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
+import { Button } from "./button";
 
 export default function SignOutBtn() {
   const router = useRouter();
   return (
     <Button
       onClick={async () => {
-        await deleteSession();
+        const res = await authFetch(`${envs.BACKEND_URL}/auth/logout`, {
+          method: "POST",
+        });
+        if (res?.ok) {
+          await deleteSession();
+        }
         router.push("/auth/signin");
       }}
     >
