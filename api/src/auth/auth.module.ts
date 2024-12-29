@@ -13,6 +13,8 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import googleOauthConfig from 'src/config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import frontendConfig from 'src/config/frontend.config';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -36,6 +38,10 @@ import frontendConfig from 'src/config/frontend.config';
     JwtStrategy,
     RefreshTokenStrategy,
     GoogleStrategy,
+    {
+      provide: APP_GUARD, // this is used to protect routes using the JwtAuthGuard globally and we don't have to use the @UseGuards() decorator in each route
+      useClass: JwtAuthGuard, //@UseGuards(JwtAuthGuard) // only signed in user can call any route
+    },
   ],
 })
 export class AuthModule {}

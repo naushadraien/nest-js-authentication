@@ -17,6 +17,9 @@ import { GoogleOAuthGuard } from './guards/google-oauth/google-oauth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
+import { Public } from './decorators/public.decorator';
+
+//Removed the @UseGuards(JwtAuthGuard) decorator as all the api routes are protected by the JwtAuthGuard globally as used in auth module
 
 @Controller('auth')
 export class AuthController {
@@ -30,11 +33,13 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Public()
   @Post('signup')
   registerUser(@Body() createUserDto: CreateUserDto) {
     return this.authService.registerUser(createUserDto);
   }
 
+  @Public()
   @UseGuards(LocalAuthGuard) // this is the local strategy guard which is used to authenticate the user using email and password
   @Post('signin')
   login(
@@ -49,7 +54,8 @@ export class AuthController {
     return this.authService.login(req.user.id, req.user.name);
   }
 
-  @UseGuards(JwtAuthGuard) // only signed in user can call this route
+  //Removed the @UseGuards(JwtAuthGuard) decorator as all the api routes are protected by the JwtAuthGuard globally
+  // @UseGuards(JwtAuthGuard) // only signed in user can call this route
   @Get('me')
   getMyProfile(
     @Request()
@@ -62,16 +68,19 @@ export class AuthController {
     return this.authService.getMyProfile(req.user.id);
   }
 
+  @Public()
   @UseGuards(RefreshAuthGuard) // this is the refresh token strategy guard which is used to authenticate the user using refresh token and get a new access token
   @Post('refresh')
   refresh(@Request() req) {
     return this.authService.refresh(req.user.id, req.user.name);
   }
 
+  @Public()
   @UseGuards(GoogleOAuthGuard) // this is the google oauth strategy guard which is used to authenticate the user using google oauth and get a new access token
   @Get('google/login')
   googleLogin() {}
 
+  @Public()
   @UseGuards(GoogleOAuthGuard)
   @Get('google/callback')
   async googleCallback(@Request() req, @Res() res: Response) {
@@ -94,7 +103,8 @@ export class AuthController {
     );
   } //callback means redirect to some page when login
 
-  @UseGuards(JwtAuthGuard) // only signed in user can call this route
+  //Removed the @UseGuards(JwtAuthGuard) decorator as all the api routes are protected by the JwtAuthGuard globally
+  // @UseGuards(JwtAuthGuard) // only signed in user can call this route
   @Post('logout')
   async logOut(
     @Request()
