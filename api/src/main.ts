@@ -1,6 +1,7 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { NotFoundFilter } from './common/filters/not-found/not-found.filter';
 import { corsOptions } from './config/corsOptions';
 
 async function bootstrap() {
@@ -14,6 +15,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors(corsOptions);
+  // app.useGlobalFilters(new NotFoundFilter()); //this is for making the custom message for any route is not found
 
   await app.listen(process.env.PORT ?? 3000);
 }

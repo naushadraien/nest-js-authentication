@@ -37,6 +37,8 @@ export class AuthService {
   }
   async login(userId: number, name?: string) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10); //this is done for invalidating or revoking the refresh token when the user logs out
+    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
     return {
       id: userId,
       name,
@@ -62,9 +64,16 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('User not found!');
     return { id: user.id };
   }
-  async validateRefreshToken(userId: number) {
+  async validateRefreshToken(userId: number, refreshToken: string) {
     const user = await this.userService.findUserById(userId);
     if (!user) throw new UnauthorizedException('User not found!');
+    const isRefreshTokenMatched = await bcrypt.compare(
+      //this is for invalidating or revoking the refresh token when the user logs out
+      refreshToken,
+      user.hashedRefreshToken,
+    );
+    if (!isRefreshTokenMatched)
+      throw new UnauthorizedException('Invalid refresh token');
     return { id: user.id, name: user.name };
   }
 
@@ -74,6 +83,8 @@ export class AuthService {
 
   async refresh(userId: number, name: string) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10); //this is done for invalidating or revoking the refresh token when the user logs out to prevent the user from using the old refresh token to get a new access token
+    await this.userService.updateHashedRefreshToken(userId, hashedRefreshToken);
     return {
       id: userId,
       name,
@@ -86,5 +97,9 @@ export class AuthService {
     const user = await this.userService.findByEmail(googleUser.email);
     if (user) return user;
     return await this.userService.create(googleUser);
+  }
+
+  async logOut(userId: number) {
+    return await this.userService.updateHashedRefreshToken(userId, null); //this is done for invalidating or revoking the refresh token when the user logs out to prevent the user from using the old refresh token to get a new access token
   }
 }
